@@ -1,35 +1,39 @@
-// lib/screens/login_screen.dart
+// lib/screens/register_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:honness/views/screens/home_screen.dart';
 import '../../blocs/auth_bloc/auth_bloc.dart';
 import '../../blocs/auth_bloc/auth_event.dart';
 import '../../blocs/auth_bloc/auth_state.dart';
-import 'home_screen.dart'; // Import HomeView
 
-class LoginScreen extends StatelessWidget {
+class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Register'),
       ),
-      body: LoginForm(),
+      body: RegisterForm(),
     );
   }
 }
 
-class LoginForm extends StatelessWidget {
+class RegisterForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          TextField(
+            controller: nameController,
+            decoration: InputDecoration(labelText: 'Name'),
+          ),
           TextField(
             controller: emailController,
             decoration: InputDecoration(labelText: 'Email'),
@@ -40,24 +44,36 @@ class LoginForm extends StatelessWidget {
             decoration: InputDecoration(labelText: 'Password'),
             obscureText: true,
           ),
+          TextField(
+            controller: confirmPasswordController,
+            decoration: InputDecoration(labelText: 'Confirm Password'),
+            obscureText: true,
+          ),
           SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
+              final name = nameController.text;
               final email = emailController.text;
               final password = passwordController.text;
+              final confirmPassword = confirmPasswordController.text;
               BlocProvider.of<AuthBloc>(context).add(
-                AuthLoginRequested(email,password),
+                AuthRegisterRequested(
+                  name,
+                  email,
+                  password,
+                  confirmPassword,
+                ),
               );
             },
-            child: Text('Login'),
+            child: Text('Register'),
           ),
           SizedBox(height: 16),
           TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/register');
+              Navigator.pushNamed(context, '/login');
             },
             child: Text(
-              'Don\'t have an account? Register here',
+              'Already have an account? Login here',
               style: TextStyle(color: Colors.blue),
             ),
           ),
@@ -66,13 +82,6 @@ class LoginForm extends StatelessWidget {
               if (state is AuthLoading) {
                 return Center(child: CircularProgressIndicator());
               } else if (state is AuthSuccess) {
-                // Navigate to HomeView on success
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
-                  );
-                });
                 return Text('Success: ${state.message}', style: TextStyle(color: Colors.green));
               } else if (state is AuthFailure) {
                 return Text('Error: ${state.error}', style: TextStyle(color: Colors.red));
